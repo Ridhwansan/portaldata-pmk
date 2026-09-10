@@ -10,18 +10,30 @@ import {
   ArrowLeft,
   ChevronDown,
   Check,
+  Database,
+  ShieldCheck,
+  UserCheck,
 } from 'lucide-react';
 import { DatasetFormData, UploadedFilePreview } from '../../types/admin.types';
 import { FileDropzone } from '../atoms/FileDropzone';
+import { MetadataColumnEditor } from './MetadataColumnEditor';
 import { datasetStorageService } from '../../services/datasetStorageService';
 import { FileFormat } from '@/shared/types/common.types';
-import { KedeputianId } from '@/features/catalog/types/catalog.types';
+import { KedeputianId, DatasetMetadataColumn } from '@/features/catalog/types/catalog.types';
 
 interface DatasetFormContainerProps {
   initialData?: Partial<DatasetFormData>;
   datasetId?: string;
   isEditMode?: boolean;
 }
+
+const DEFAULT_COLUMNS: DatasetMetadataColumn[] = [
+  { name: 'id', type: 'Integer', description: 'Nomor unik baris data', sample: 1, unit: 'ID' },
+  { name: 'kode_provinsi', type: 'String', description: 'Kode wilayah provinsi standar BPS', sample: '31', unit: 'Kode' },
+  { name: 'nama_provinsi', type: 'String', description: 'Nama provinsi di Indonesia', sample: 'DKI Jakarta' },
+  { name: 'tahun', type: 'Integer', description: 'Tahun pencatatan data', sample: 2026, unit: 'Tahun' },
+  { name: 'capaian_indikator', type: 'Decimal', description: 'Nilai persentase capaian indikator', sample: 89.5, unit: 'Persen (%)' },
+];
 
 export function DatasetFormContainer({
   initialData,
@@ -43,12 +55,19 @@ export function DatasetFormContainer({
     coverageArea: initialData?.coverageArea || 'Nasional (38 Provinsi)',
     timePeriod: initialData?.timePeriod || '2026',
     license: initialData?.license || 'Creative Commons Attribution 4.0 International (CC BY 4.0)',
+    standardReference: initialData?.standardReference || 'Prinsip Satu Data Indonesia (Perpres No. 39/2019)',
+    spatialResolution: initialData?.spatialResolution || 'Tingkat Provinsi & Kabupaten/Kota',
+    temporalGranularity: initialData?.temporalGranularity || 'Tahunan',
+    contactName: initialData?.contactName || 'Walidata Kemenko PMK',
+    contactEmail: initialData?.contactEmail || 'data@kemenkopmk.go.id',
+    contactRole: initialData?.contactRole || 'Pengelola Portal Data',
     description: initialData?.description || '',
     fullDescription: initialData?.fullDescription || '',
     tags: initialData?.tags || 'Pendidikan, Data Terbuka, Kemenko PMK',
     formats: initialData?.formats || ['CSV'],
     status: initialData?.status || 'published',
     uploadedFile: initialData?.uploadedFile,
+    columns: initialData?.columns || DEFAULT_COLUMNS,
   });
 
   const handleFormatToggle = (fmt: FileFormat) => {
@@ -61,12 +80,16 @@ export function DatasetFormContainer({
     });
   };
 
-  const handleFileLoaded = (preview: UploadedFilePreview | undefined) => {
+  const handleFileLoaded = (
+    preview: UploadedFilePreview | undefined,
+    parsedColumns?: DatasetMetadataColumn[]
+  ) => {
     if (preview) {
       setFormData((prev) => ({
         ...prev,
         uploadedFile: preview,
         formats: Array.from(new Set([...prev.formats, preview.format])),
+        columns: parsedColumns && parsedColumns.length > 0 ? parsedColumns : prev.columns,
       }));
     } else {
       setFormData((prev) => ({
@@ -74,6 +97,13 @@ export function DatasetFormContainer({
         uploadedFile: undefined,
       }));
     }
+  };
+
+  const handleColumnsChange = (newColumns: DatasetMetadataColumn[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      columns: newColumns,
+    }));
   };
 
   const handleSubmit = async (targetStatus: 'published' | 'draft') => {
@@ -84,6 +114,11 @@ export function DatasetFormContainer({
 
     if (formData.formats.length === 0) {
       alert('Pilih setidaknya satu format file dataset!');
+      return;
+    }
+
+    if (!formData.columns || formData.columns.length === 0) {
+      alert('Kamus metadata minimal harus memiliki satu kolom variabel!');
       return;
     }
 
@@ -118,13 +153,13 @@ export function DatasetFormContainer({
       id: 'XLS',
       name: 'Microsoft Excel',
       ext: '.xlsx / .xls',
-      desc: 'Format spreadsheet untuk Microsoft Excel & aplikasi lembar kerja',
+      desc: 'Format spreadsheet untuk Microsoft Excel & lembar kerja',
     },
     {
       id: 'JSON',
       name: 'JSON (API Payload)',
       ext: '.json',
-      desc: 'Format hierarki data untuk integrasi aplikasi & developer API',
+      desc: 'Format hierarki data untuk integrasi aplikasi & developer',
     },
   ];
 
@@ -141,10 +176,10 @@ export function DatasetFormContainer({
             <span>Kembali ke Daftar Dataset</span>
           </Link>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            {isEditMode ? 'Edit Dataset' : 'Input & Tambah Dataset Baru'}
+            {isEditMode ? 'Edit Dataset & Metadata' : 'Input & Tambah Dataset Baru'}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Unggah file data sumber (CSV, XLSX, JSON) dan lengkapi kamus metadata dataset.
+            Unggah file sumber data, kelola kamus variabel metadata, dan lengkapi spesifikasi Satu Data Indonesia.
           </p>
         </div>
 
@@ -171,7 +206,7 @@ export function DatasetFormContainer({
       {successMsg && (
         <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3 text-sm font-bold animate-in fade-in">
           <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-          <span>Dataset berhasil disimpan! Mengalihkan ke halaman daftar dataset...</span>
+          <span>Dataset & metadata berhasil disimpan! Mengalihkan ke halaman daftar dataset...</span>
         </div>
       )}
 
@@ -184,7 +219,7 @@ export function DatasetFormContainer({
               1. Unggah File Sumber Data
             </h3>
             <p className="text-xs text-slate-500">
-              Pilih atau seret file berformat CSV, Excel (XLSX), atau JSON untuk diinput.
+              Pilih atau seret file berformat CSV, Excel (XLSX), atau JSON. Kolom pada kamus metadata akan terisi otomatis.
             </p>
           </div>
         </div>
@@ -204,7 +239,7 @@ export function DatasetFormContainer({
               2. Informasi & Metadata Dataset
             </h3>
             <p className="text-xs text-slate-500">
-              Lengkapi rincian judul, kategori, instansi, dan deskripsi data.
+              Lengkapi rincian judul, kategori, instansi penerbit, dan deskripsi data.
             </p>
           </div>
         </div>
@@ -220,7 +255,7 @@ export function DatasetFormContainer({
               required
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="Contoh: Tingkat partisipasi sekolah mulai dari TK hingga SMA"
+              placeholder="Contoh: Data tingkat penerimaan kerja siswa SMK di indonesia tahun 2026"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-[#A32A29] focus:bg-white"
             />
           </div>
@@ -280,7 +315,7 @@ export function DatasetFormContainer({
               required
               value={formData.publisher}
               onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
-              placeholder="Contoh: Kementerian Kesehatan RI"
+              placeholder="Contoh: Kementerian Pendidikan Dasar dan Menengah"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-[#A32A29] focus:bg-white"
             />
           </div>
@@ -316,7 +351,7 @@ export function DatasetFormContainer({
               rows={2}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Deskripsi singkat yang tampil pada kartu dataset..."
+              placeholder="Deskripsi singkat yang tampil pada kartu katalog..."
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-[#A32A29] focus:bg-white"
             />
           </div>
@@ -327,7 +362,7 @@ export function DatasetFormContainer({
               Deskripsi Lengkap & Metodologi
             </label>
             <textarea
-              rows={4}
+              rows={3}
               value={formData.fullDescription}
               onChange={(e) => setFormData({ ...formData, fullDescription: e.target.value })}
               placeholder="Jelaskan cakupan data, metodologi pengumpulan, batasan data, dsb..."
@@ -335,14 +370,14 @@ export function DatasetFormContainer({
             />
           </div>
 
-          {/* Formats Selection Checklist (Clear & Unambiguous Checkboxes) */}
+          {/* Formats Selection Checklist */}
           <div className="space-y-3 sm:col-span-2 pt-3 border-t border-slate-100">
             <div>
               <label className="text-xs font-bold text-slate-800 block">
                 Format File yang Disediakan untuk Publik <span className="text-red-500">*</span>
               </label>
               <p className="text-[11px] text-slate-500">
-                Pilih format yang dapat diunduh oleh masyarakat (bisa memilih lebih dari satu).
+                Pilih format yang dapat diunduh oleh masyarakat.
               </p>
             </div>
 
@@ -390,6 +425,99 @@ export function DatasetFormContainer({
         </div>
       </div>
 
+      {/* 3. Kamus Data & Spesifikasi Variabel (Metadata Editor) */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
+        <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+          <Database className="w-5 h-5 text-[#A32A29]" />
+          <div>
+            <h3 className="font-bold text-slate-900 text-base sm:text-lg">
+              3. Kamus Data & Spesifikasi Variabel
+            </h3>
+            <p className="text-xs text-slate-500">
+              Kelola daftar variabel kolom, tipe data, satuan nilai, dan penjelasan kamus data untuk diakses masyarakat.
+            </p>
+          </div>
+        </div>
+
+        <MetadataColumnEditor
+          columns={formData.columns || DEFAULT_COLUMNS}
+          onChange={handleColumnsChange}
+        />
+      </div>
+
+      {/* 4. Spesifikasi Teknis & Tata Kelola Satu Data Indonesia */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
+        <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+          <ShieldCheck className="w-5 h-5 text-[#A32A29]" />
+          <div>
+            <h3 className="font-bold text-slate-900 text-base sm:text-lg">
+              4. Tata Kelola & Standar Satu Data Indonesia
+            </h3>
+            <p className="text-xs text-slate-500">
+              Informasi standar data, kontak walidata PIC teknis, dan lisensi hukum.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {/* PIC Contact Name */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700">
+              Nama Walidata / PIC Pengelola Data
+            </label>
+            <input
+              type="text"
+              value={formData.contactName || ''}
+              onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+              placeholder="Contoh: Walidata Kemenko PMK"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-[#A32A29] focus:bg-white"
+            />
+          </div>
+
+          {/* PIC Contact Email */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700">
+              Email PIC Walidata
+            </label>
+            <input
+              type="email"
+              value={formData.contactEmail || ''}
+              onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+              placeholder="data@kemenkopmk.go.id"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-[#A32A29] focus:bg-white"
+            />
+          </div>
+
+          {/* Standard Reference */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700">
+              Standar Data / Referensi Interoperabilitas
+            </label>
+            <input
+              type="text"
+              value={formData.standardReference || ''}
+              onChange={(e) => setFormData({ ...formData, standardReference: e.target.value })}
+              placeholder="Prinsip Satu Data Indonesia (Perpres No. 39/2019)"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-[#A32A29] focus:bg-white"
+            />
+          </div>
+
+          {/* Spatial Resolution */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700">
+              Ketelitian / Resolusi Spasial
+            </label>
+            <input
+              type="text"
+              value={formData.spatialResolution || ''}
+              onChange={(e) => setFormData({ ...formData, spatialResolution: e.target.value })}
+              placeholder="Tingkat Provinsi & Kabupaten/Kota"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-[#A32A29] focus:bg-white"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Bottom Actions */}
       <div className="flex items-center justify-end gap-3 pt-4">
         <Link
@@ -410,3 +538,4 @@ export function DatasetFormContainer({
     </div>
   );
 }
+

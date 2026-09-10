@@ -1,5 +1,5 @@
 import { FileFormat } from '@/shared/types/common.types';
-import { KedeputianId } from '@/features/catalog/types/catalog.types';
+import { KedeputianId, DatasetMetadataColumn, DatasetContactPoint } from '@/features/catalog/types/catalog.types';
 
 export type DatasetStatus = 'published' | 'draft' | 'archived';
 
@@ -10,17 +10,28 @@ export interface AdminDatasetItem {
   slug: string;
   title: string;
   description: string;
+  fullDescription?: string;
   category: string;
   kedeputianId: KedeputianId;
   publisher: string;
+  publisherCode?: string;
   publishDate: string;
   updateDate: string;
+  updateFrequency?: string;
+  coverageArea?: string;
+  timePeriod?: string;
+  license?: string;
+  standardReference?: string;
+  spatialResolution?: string;
+  temporalGranularity?: string;
+  contactPoint?: DatasetContactPoint;
   formats: FileFormat[];
   status: DatasetStatus;
   downloadCount: number;
   viewCount: number;
   fileSize?: string;
   fileName?: string;
+  columns?: DatasetMetadataColumn[];
 }
 
 export interface PermohonanDataItem {
@@ -63,10 +74,17 @@ export interface DatasetFormData {
   coverageArea: string;
   timePeriod: string;
   license: string;
+  standardReference?: string;
+  spatialResolution?: string;
+  temporalGranularity?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactRole?: string;
   description: string;
   fullDescription: string;
   tags: string;
   formats: FileFormat[];
   status: DatasetStatus;
   uploadedFile?: UploadedFilePreview;
+  columns?: DatasetMetadataColumn[];
 }

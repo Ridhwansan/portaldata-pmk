@@ -7,7 +7,10 @@ import { datasetStorageService } from '../../services/datasetStorageService';
 import { formatFileSize } from '@/shared/utils/formatters';
 
 interface FileDropzoneProps {
-  onFileLoaded: (preview: UploadedFilePreview | undefined) => void;
+  onFileLoaded: (
+    preview: UploadedFilePreview | undefined,
+    parsedColumns?: import('@/features/catalog/types/catalog.types').DatasetMetadataColumn[]
+  ) => void;
   initialFile?: UploadedFilePreview;
   className?: string;
 }
@@ -37,9 +40,9 @@ export function FileDropzone({
       return;
     }
 
-    const preview = await datasetStorageService.parseUploadedFile(file);
+    const { preview, columns } = await datasetStorageService.parseUploadedFile(file);
     setFilePreview(preview);
-    onFileLoaded(preview);
+    onFileLoaded(preview, columns);
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {

@@ -17,6 +17,15 @@ export interface DatasetMetadataColumn {
   type: string;
   description: string;
   sample: string | number;
+  unit?: string;
+  isRequired?: boolean;
+}
+
+export interface DatasetContactPoint {
+  name: string;
+  email: string;
+  role?: string;
+  institution?: string;
 }
 
 export interface DatasetItem {
@@ -35,6 +44,7 @@ export interface DatasetItem {
   updateDate: string;
   updateFrequency: string;
   license: string;
+  licenseUrl?: string;
   formats: FileFormat[];
   downloadCount: number;
   viewCount: number;
@@ -42,6 +52,10 @@ export interface DatasetItem {
   tags: string[];
   coverageArea: string;
   timePeriod: string;
+  standardReference?: string;
+  spatialResolution?: string;
+  temporalGranularity?: string;
+  contactPoint?: DatasetContactPoint;
   columns: DatasetMetadataColumn[];
   previewRows: Record<string, string | number>[];
   jsonData: Record<string, any>;
