@@ -33,14 +33,7 @@ export function DownloadButton({
   };
 
   const getFormatBadgeColor = () => {
-    switch (format) {
-      case 'CSV':
-        return 'bg-blue-600 text-white';
-      case 'JSON':
-        return 'bg-amber-600 text-white';
-      case 'XLS':
-        return 'bg-emerald-600 text-white';
-    }
+    return 'bg-slate-100 text-slate-800 border border-slate-200';
   };
 
   if (variant === 'compact') {
@@ -49,9 +42,9 @@ export function DownloadButton({
         type="button"
         onClick={handleDownload}
         disabled={downloading}
-        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer ${className}`}
+        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all active:scale-[0.98] shadow-2xs hover:shadow-xs cursor-pointer ${className}`}
       >
-        <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ${getFormatBadgeColor()}`}>
+        <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold font-mono ${getFormatBadgeColor()}`}>
           {format}
         </span>
         {downloading ? (

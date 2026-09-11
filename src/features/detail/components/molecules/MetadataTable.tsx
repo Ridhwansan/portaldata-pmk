@@ -52,19 +52,19 @@ export function MetadataTable({ columns, dataset }: MetadataTableProps) {
             <button
               type="button"
               onClick={() => triggerDownloadMetadata(dataset, 'CSV')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-bold shadow-2xs hover:shadow-xs active:scale-[0.98] transition-all cursor-pointer"
               title="Unduh Kamus Data format CSV"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+              <FileSpreadsheet className="w-4 h-4 text-slate-500" />
               <span>Unduh Kamus (CSV)</span>
             </button>
             <button
               type="button"
               onClick={() => triggerDownloadMetadata(dataset, 'JSON')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-bold shadow-2xs hover:shadow-xs active:scale-[0.98] transition-all cursor-pointer"
               title="Unduh Metadata format JSON"
             >
-              <FileJson className="w-3.5 h-3.5 text-amber-600" />
+              <FileJson className="w-4 h-4 text-slate-500" />
               <span>Unduh Metadata (JSON)</span>
             </button>
           </div>
@@ -118,7 +118,7 @@ export function MetadataTable({ columns, dataset }: MetadataTableProps) {
                   </td>
                   <td className="py-3.5 px-4 text-slate-600 font-medium whitespace-nowrap">
                     {col.unit ? (
-                      <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200/70 text-xs">
+                      <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 text-xs font-mono">
                         {col.unit}
                       </span>
                     ) : (
